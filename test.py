@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-from sqlalchemy_elastiquery import elastic_query
+import sqlalchemy_elasticquery
 
 Base = declarative_base()
 
@@ -40,8 +40,8 @@ def create_data():
     session.commit()
 
 
-prepare_enviroment()
-create_tables()
-create_data()
+# prepare_enviroment()
+# create_tables()
+# create_data()
 
-print session.query(User).all()
+# print session.query(User).all()
