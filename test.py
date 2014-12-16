@@ -1,7 +1,7 @@
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
-import sqlalchemy_elasticquery
+from sqlalchemy_elasticquery import elastic_query
 
 Base = declarative_base()
 
@@ -40,8 +40,12 @@ def create_data():
     session.commit()
 
 
-# prepare_enviroment()
-# create_tables()
-# create_data()
+prepare_enviroment()
+create_tables()
+create_data()
+
+query_string = '{"filter" : {"and" : {"name" : {"like" : "joel"}, "lastname" : "joel", "uid" : {"like" : "joel"} } } }'
+
+elastic_query(User, query_string, session)
 
 # print session.query(User).all()
