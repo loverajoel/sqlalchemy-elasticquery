@@ -1,3 +1,4 @@
+import unittest
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import sessionmaker
@@ -5,15 +6,6 @@ from sqlalchemy_elasticquery import elastic_query
 
 Base = declarative_base()
 
-def prepare_enviroment():
-    global engine
-    engine = create_engine('sqlite:///:memory:', echo=True)
-    global Session
-    Session = sessionmaker(bind=engine)
-    global session
-    session = Session()
-
-# Models
 class User(Base):
     __tablename__ = 'users'
 
@@ -25,27 +17,38 @@ class User(Base):
     def __repr__(self):
         return str(self.id)
 
-def create_tables():
-    Base.metadata.create_all(bind=engine)
+class TestCase(unittest.TestCase):
 
-def create_data():
-    # ed_user = User(name='Joel', lastname='Lovera', uid='34755467')
-    # session.add(ed_user)
-    # session.commit()
-    session.add_all([
+    def setUp(self):
+        """ Initial setup for the test"""
+        global engine
+        engine = create_engine('sqlite:///:memory:', echo=False)
+        global Session
+        Session = sessionmaker(bind=engine)
+        global session
+        session = Session()
+
+        Base.metadata.create_all(bind=engine)
+
+        session.add_all([
         User(name='Joel', lastname='Lovera', uid='34755467'),
         User(name='Joel1', lastname='Lovera2', uid='34755468'),
         User(name='Joel2', lastname='Lovera3', uid='34755469')
         ])
-    session.commit()
+        session.commit()
 
+    def tearDown(self):
+        """ Remove all setup """
+        # db.session.remove()
+        # db.drop_all()
+        pass
 
-prepare_enviroment()
-create_tables()
-create_data()
+    def test_setup_is_ok(self):
+        """ Demo test """
+        assert(session.query(User).count() == 3)
 
-query_string = '{"filter" : {"and" : {"name" : {"like" : "joel"}, "lastname" : "joel", "uid" : {"like" : "joel"} } } }'
+    def test_and(self):
+        query_string = '{"filter" : {"and" : {"name" : {"like" : "joel"}, "lastname" : "joel", "uid" : {"like" : "joel"} } } }'
+        elastic_query(User, query_string, session)
 
-elastic_query(User, query_string, session)
-
-# print session.query(User).all()
+unittest.main()
