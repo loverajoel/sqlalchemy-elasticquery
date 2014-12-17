@@ -1,7 +1,7 @@
 """
     SQLAlchemy-ElasticQuery
     ~~~~~~~~~~~~~~~~~~~~~~~~~
-    This extension allow you use the ElasticSearch sintax for search in SQLAlchemy.
+    This extension allow you use the ElasticSearch syntax for search in SQLAlchemy.
     Get a query string and return a SQLAlchemy query
 
     Example query string:
@@ -31,7 +31,6 @@
         }
 
     :copyright: 2015 Joel Lovera <joelalovera@gmail.com>
-    :license: GNU AGPLv3+ or BSD
 """
 import json
 from sqlalchemy import and_, or_
