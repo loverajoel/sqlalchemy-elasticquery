@@ -59,7 +59,6 @@ SELECT users.id AS users_id, users.name AS users_name, users.lastname AS users_l
 # Using with Flask
 
 # TODO:
- - Add to pip
  - Sorting support
- - Add doc
+ - Improve documentation
  - Improve tests
