@@ -10,11 +10,11 @@
             "filter" : {
                 "or" : {
                     "firstname" : {
-                        "equals" : "joel"
+                        "equals" : "Jhon"
                     },
-                    "lastname" : "joel",
+                    "lastname" : "Galt",
                     "uid" : {
-                        "like" : "joel"
+                        "like" : "111111"
                     }
                 },
                 "and" : {
