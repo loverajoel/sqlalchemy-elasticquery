@@ -66,4 +66,11 @@ class TestCase(unittest.TestCase):
         query_string = '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Galt" }, "and" : { "uid" : "19571957" } } }'
         assert(elastic_query(User, query_string, session).count() == 1)
 
+    def test_sorting(self):
+        """ test operator levels """
+        query_string = '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
+        results = elastic_query(User, query_string, session).all()
+        assert(results[0].name == 'Iron')
+
+
 unittest.main()

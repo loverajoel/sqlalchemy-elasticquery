@@ -33,7 +33,7 @@
     :copyright: 2015 Joel Lovera <joelalovera@gmail.com>
 """
 import json
-from sqlalchemy import and_, or_
+from sqlalchemy import and_, or_, desc, asc
 
 __version__ = '0.0.1'
 
@@ -82,8 +82,12 @@ class ElasticQuery(object):
         # TODO: verify format and emit expetion
         filters = json.loads(self.query)
         
-        if filters['filter'] is not None:
-            return self.parse_filter(filters['filter'])
+        if 'filter'in filters.keys():
+            result = self.parse_filter(filters['filter'])
+        if 'sort'in filters.keys():
+            result = result.order_by(*self.sort(filters['sort']))
+
+        return result
 
     def parse_filter(self, filters):
         """ This method process the filters
@@ -135,3 +139,14 @@ class ElasticQuery(object):
         value = attr[2]
         model = self.model
         return OPERATORS[operator](getattr(model, field, None), value)
+
+    def sort(self, sort_list):
+        """ Sort
+        """
+        order = []
+        for sort in sort_list:
+            if sort_list[sort] == "asc":
+                order.append(asc(getattr(self.model, sort, None)))
+            elif sort_list[sort] == "desc":
+                order.append(desc(getattr(self.model, sort, None)))
+        return order
