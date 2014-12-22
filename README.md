@@ -61,6 +61,15 @@ SELECT users.id AS users_id, users.name AS users_name, users.lastname AS users_l
 
 # Using with Flask
 
+ElasticQuery example
+```python
+from sqlalchemy_elasticquery import elastic_query
+
+query_string = '{"filter":{"or":{"name":"Jhon","lastname":"Galt"},"and":{"uid":"19571957"}}}'
+print elastic_query(User, query_string)
+SELECT users.id AS users_id, users.name AS users_name, users.lastname AS users_lastname, users.uid AS users_uid FROM users WHERE users.uid = :uid_1 AND (users.lastname = :lastname_1 OR users.name = :name_1)
+```
+
 # TODO:
  - Flask support
  - Operator levels (and : { or : {...}}

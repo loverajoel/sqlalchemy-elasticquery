@@ -38,7 +38,7 @@ from sqlalchemy import and_, or_, desc, asc
 __version__ = '0.0.1'
 
 
-def elastic_query(model, query, session):
+def elastic_query(model, query, session = None):
     """ Public method for init the class ElasticQuery
         :model: SQLAlchemy model
         :query: valid string like a ElasticSearch
@@ -67,17 +67,20 @@ OPERATORS = {
 class ElasticQuery(object):
     """ Magic method """
 
-    def __init__(self, model, query, session):
+    def __init__(self, model, query, session=None):
         """ Initializator of the class 'ElasticQuery' """
         self.model = model
         self.query = query
-        self.session = session
-        self.model_query = self.session.query(self.model)
+        if hasattr(model, 'query'):
+            self.model_query = model.query
+        else:
+            self.model_query = session.query(self.model)
 
     def search(self):
         """ This is the most important method """
         # TODO: verify format and emit expetion
         filters = json.loads(self.query)
+        result = self.model_query
         if 'filter'in filters.keys():
             result = self.parse_filter(filters['filter'])
         if 'sort'in filters.keys():
