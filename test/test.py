@@ -1,12 +1,13 @@
 import unittest
 from sqlalchemy import create_engine, Column, Integer, String
 from sqlalchemy.ext.declarative import declarative_base
+from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy_elasticquery import elastic_query
 from sqlalchemy import and_, or_
+from flask import Flask
 
 Base = declarative_base()
-
 
 class User(Base):
     __tablename__ = 'users'
@@ -18,7 +19,6 @@ class User(Base):
 
     def __repr__(self):
         return str(self.id)
-
 
 class TestCase(unittest.TestCase):
 
@@ -71,5 +71,37 @@ class TestCase(unittest.TestCase):
         query_string = '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
         results = elastic_query(User, query_string, session).all()
         assert(results[0].name == 'Iron')
+
+    def test_flask(self):
+        #Flask app
+        app = Flask(__name__)
+        db = SQLAlchemy(app)
+        app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
+
+        class Cities(db.Model):
+            __tablename__ = 'users'
+
+            id = Column(Integer, primary_key=True)
+            name = Column(String)
+            population = Column(Integer)
+
+            def __init__(self, name, population):
+                self.name = name
+                self.population = population
+                
+                
+        app.config['TESTING'] = True
+        app = app.test_client()
+        db.create_all()
+
+        city = Cities("Cordoba", 1000000)
+        db.session.add(city)
+        city = Cities("Rafaela", 99000)
+        db.session.add(city)
+        db.session.commit()
+
+        query_string = '{ "sort": { "population" : "desc" } }'
+        results = elastic_query(Cities, query_string)
+        assert(results[0].name == 'Cordoba')
 
 unittest.main()
