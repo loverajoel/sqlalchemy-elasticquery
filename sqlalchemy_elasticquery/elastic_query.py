@@ -30,7 +30,6 @@
             }
         }
 
-    :copyright: 2015 Joel Lovera <joelalovera@gmail.com>
 """
 import json
 from sqlalchemy import and_, or_, desc, asc
