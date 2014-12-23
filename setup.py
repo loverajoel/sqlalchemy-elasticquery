@@ -1,7 +1,6 @@
 import os
 from setuptools import setup
 
-
 def read(*paths):
     """Build a file path from *paths* and return the contents."""
     with open(os.path.join(*paths), 'r') as f:
@@ -16,15 +15,13 @@ setup(
     author='Joel Lovera',
     author_email='joelalover@gmail.com',
     packages=['sqlalchemy_elasticquery'],
-    long_description=open('README.md').read(),
     include_package_data=True,
     install_requires=[
         'SQLAlchemy>=0.7.8',
     ],
     classifiers=[
         'Development Status :: 4 - Beta',
-        'Environment :: Plugins'
-        'Framework :: Flask',
+        'Environment :: Plugins',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Programming Language :: Python',
