@@ -104,4 +104,11 @@ class TestCase(unittest.TestCase):
         results = elastic_query(Cities, query_string)
         assert(results[0].name == 'Cordoba')
 
+    def test_allow_fields_option(self):
+        """ test allow_fields option """
+        query_string = '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
+        allow_fields = ['name']
+        results = elastic_query(User, query_string, session, allow_fields=allow_fields).all()
+        assert(results[0].name == 'Jhon')
+
 unittest.main()
