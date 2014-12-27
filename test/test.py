@@ -1,8 +1,8 @@
 import unittest
-from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, inspect
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from flask.ext.sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import sessionmaker, relationship, backref
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy_elasticquery import elastic_query
 from sqlalchemy import and_, or_
 from flask import Flask
