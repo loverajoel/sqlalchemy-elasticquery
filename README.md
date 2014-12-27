@@ -72,7 +72,6 @@ SELECT users.id AS users_id, users.name AS users_name, users.lastname AS users_l
 ```
 
 # TODO:
- - Flask support
  - Operator levels (and : { or : {...}}
  - Improve documentation
  - Improve tests
