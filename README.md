@@ -58,6 +58,7 @@ print elastic_query(User, query_string, session)
 SELECT users.id AS users_id, users.name AS users_name, users.lastname AS users_lastname, users.uid AS users_uid FROM users WHERE users.uid = :uid_1 AND (users.lastname = :lastname_1 OR users.name = :name_1)
 ```
 # Querying
+* ***Nested search***: You can search for nested properties(Two levels, now). Ex: 
 
 # Using with Flask
 
