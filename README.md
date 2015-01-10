@@ -59,6 +59,10 @@ SELECT users.id AS users_id, users.name AS users_name, users.lastname AS users_l
 ```
 # Querying
 
+# Options
+
+* **enabled_fields**: It's a list of fields allowed for work, for default all fields are allowed.
+
 # Using with Flask
 
 ElasticQuery example
@@ -71,7 +75,6 @@ SELECT users.id AS users_id, users.name AS users_name, users.lastname AS users_l
 ```
 
 # TODO:
- - Flask support
  - Operator levels (and : { or : {...}}
  - Improve documentation
  - Improve tests

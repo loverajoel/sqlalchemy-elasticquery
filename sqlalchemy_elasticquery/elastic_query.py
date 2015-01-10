@@ -37,14 +37,15 @@ from sqlalchemy import and_, or_, desc, asc
 __version__ = '0.0.1'
 
 
-def elastic_query(model, query, session = None):
+def elastic_query(model, query, session=None, enabled_fields=None):
     """ Public method for init the class ElasticQuery
         :model: SQLAlchemy model
         :query: valid string like a ElasticSearch
         :session: SQLAlchemy session *optional
+        :enabled_fields: Fields allowed for make a query *optional
     """
     # TODO: make session to optional
-    instance = ElasticQuery(model, query, session)
+    instance = ElasticQuery(model, query, session, enabled_fields)
     return instance.search()
 
 """ Valid operators """
@@ -66,7 +67,7 @@ OPERATORS = {
 class ElasticQuery(object):
     """ Magic method """
 
-    def __init__(self, model, query, session=None):
+    def __init__(self, model, query, session=None, enabled_fields=None):
         """ Initializator of the class 'ElasticQuery' """
         self.model = model
         self.query = query
@@ -74,6 +75,7 @@ class ElasticQuery(object):
             self.model_query = model.query
         else:
             self.model_query = session.query(self.model)
+        self.enabled_fields = enabled_fields
 
     def search(self):
         """ This is the most important method """
@@ -93,14 +95,16 @@ class ElasticQuery(object):
             if filter_type == 'or' or filter_type == 'and':
                 conditions = []
                 for field in filters[filter_type]:
-                    conditions.append(self.create_query(self.parse_field(field, filters[filter_type][field])))
+                    if self.is_field_allowed(field):
+                        conditions.append(self.create_query(self.parse_field(field, filters[filter_type][field])))
                 if filter_type == 'or':
                     self.model_query = self.model_query.filter(or_(*conditions))
                 elif filter_type == 'and':
                     self.model_query = self.model_query.filter(and_(*conditions))
             else:
-                conditions = self.create_query(self.parse_field(filter_type, filters[filter_type]))
-                self.model_query = self.model_query.filter(conditions)
+                if self.is_field_allowed(filter_type):
+                    conditions = self.create_query(self.parse_field(filter_type, filters[filter_type]))
+                    self.model_query = self.model_query.filter(conditions)
         return self.model_query
 
     def parse_field(self, field, field_value):
@@ -125,6 +129,12 @@ class ElasticQuery(object):
                 return False
         except:
             return False
+
+    def is_field_allowed(self, field):
+        if self.enabled_fields:
+            return field in self.enabled_fields
+        else:
+            return True
 
     def create_query(self, attr):
         """ Mix all values and make the query """

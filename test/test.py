@@ -30,6 +30,7 @@ class TestCase(unittest.TestCase):
         Session = sessionmaker(bind=engine)
         global session
         session = Session()
+        session._model_changes = {}
 
         Base.metadata.create_all(bind=engine)
 
@@ -103,5 +104,12 @@ class TestCase(unittest.TestCase):
         query_string = '{ "sort": { "population" : "desc" } }'
         results = elastic_query(Cities, query_string)
         assert(results[0].name == 'Cordoba')
+
+    def test_allow_fields_option(self):
+        """ test allow_fields option """
+        query_string = '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
+        enabled_fields = ['name']
+        results = elastic_query(User, query_string, session, enabled_fields=enabled_fields).all()
+        assert(results[0].name == 'Jhon')
 
 unittest.main()
