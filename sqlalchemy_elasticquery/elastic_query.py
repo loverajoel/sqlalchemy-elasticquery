@@ -37,15 +37,15 @@ from sqlalchemy import and_, or_, desc, asc
 __version__ = '0.0.1'
 
 
-def elastic_query(model, query, session=None, allow_fields=None):
+def elastic_query(model, query, session=None, enabled_fields=None):
     """ Public method for init the class ElasticQuery
         :model: SQLAlchemy model
         :query: valid string like a ElasticSearch
         :session: SQLAlchemy session *optional
-        :allow_fields: Fields allowed for make a query *optional
+        :enabled_fields: Fields allowed for make a query *optional
     """
     # TODO: make session to optional
-    instance = ElasticQuery(model, query, session, allow_fields)
+    instance = ElasticQuery(model, query, session, enabled_fields)
     return instance.search()
 
 """ Valid operators """
@@ -67,7 +67,7 @@ OPERATORS = {
 class ElasticQuery(object):
     """ Magic method """
 
-    def __init__(self, model, query, session=None, allow_fields=None):
+    def __init__(self, model, query, session=None, enabled_fields=None):
         """ Initializator of the class 'ElasticQuery' """
         self.model = model
         self.query = query
@@ -75,7 +75,7 @@ class ElasticQuery(object):
             self.model_query = model.query
         else:
             self.model_query = session.query(self.model)
-        self.allow_fields = allow_fields
+        self.enabled_fields = enabled_fields
 
     def search(self):
         """ This is the most important method """
@@ -131,8 +131,8 @@ class ElasticQuery(object):
             return False
 
     def is_field_allowed(self, field):
-        if self.allow_fields:
-            return field in self.allow_fields
+        if self.enabled_fields:
+            return field in self.enabled_fields
         else:
             return True
 
