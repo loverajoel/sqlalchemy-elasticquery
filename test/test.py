@@ -41,6 +41,7 @@ class TestCase(unittest.TestCase):
         Session = sessionmaker(bind=engine)
         global session
         session = Session()
+        session._model_changes = {}
 
         Base.metadata.create_all(bind=engine)
 
