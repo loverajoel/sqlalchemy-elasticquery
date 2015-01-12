@@ -1,13 +1,22 @@
 import unittest
-from sqlalchemy import create_engine, Column, Integer, String
+from sqlalchemy import create_engine, Column, Integer, String, ForeignKey
 from sqlalchemy.ext.declarative import declarative_base
 from flask.ext.sqlalchemy import SQLAlchemy
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy_elasticquery import elastic_query
 from sqlalchemy import and_, or_
 from flask import Flask
 
 Base = declarative_base()
+
+class City(Base):
+    __tablename__ = 'city'
+
+    id = Column(Integer, primary_key=True)
+    name = Column(String)
+
+    def __repr__(self):
+        return str(self.id)
 
 class User(Base):
     __tablename__ = 'users'
@@ -16,6 +25,8 @@ class User(Base):
     name = Column(String)
     lastname = Column(String)
     uid = Column(Integer)
+    city_id = Column(Integer, ForeignKey(City.id))
+    city = relationship(City)
 
     def __repr__(self):
         return str(self.id)
@@ -35,9 +46,11 @@ class TestCase(unittest.TestCase):
         Base.metadata.create_all(bind=engine)
 
         session.add_all([
-            User(name='Jhon', lastname='Galt', uid='19571957'),
-            User(name='Steve', lastname='Jobs', uid='20092009'),
-            User(name='Iron', lastname='Man', uid='19571957')
+            User(name='Jhon', lastname='Galt', uid='19571957', city_id=1),
+            User(name='Steve', lastname='Jobs', uid='20092009', city_id=2),
+            User(name='Iron', lastname='Man', uid='19571957', city_id=1),
+            City(name='Cordoba'),
+            City(name='New York')
         ])
         session.commit()
 
@@ -90,7 +103,6 @@ class TestCase(unittest.TestCase):
                 self.name = name
                 self.population = population
                 
-                
         app.config['TESTING'] = True
         app = app.test_client()
         db.create_all()
@@ -111,5 +123,20 @@ class TestCase(unittest.TestCase):
         enabled_fields = ['name']
         results = elastic_query(User, query_string, session, enabled_fields=enabled_fields).all()
         assert(results[0].name == 'Jhon')
+
+    def test_search_for_levels(self):
+        """ test search for levels """
+        query_string = '{"filter" : {"or" : { "city.name" : "New York", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
+        results = elastic_query(User, query_string, session).all()
+        assert(results[0].name == 'Iron')
+
+        query_string = '{"filter" : { "city.name" : "New York" } }'
+        results = elastic_query(User, query_string, session).all()
+        assert(results[0].name == 'Steve')
+
+        query_string = '{"filter" : { "city.name" : {"like" : "%New%"} } }'
+        results = elastic_query(User, query_string, session).all()
+        assert(results[0].name == 'Steve')
+
 
 unittest.main()
