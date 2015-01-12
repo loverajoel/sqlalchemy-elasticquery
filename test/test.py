@@ -117,6 +117,13 @@ class TestCase(unittest.TestCase):
         results = elastic_query(Cities, query_string)
         assert(results[0].name == 'Cordoba')
 
+    def test_allow_fields_option(self):
+        """ test allow_fields option """
+        query_string = '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
+        enabled_fields = ['name']
+        results = elastic_query(User, query_string, session, enabled_fields=enabled_fields).all()
+        assert(results[0].name == 'Jhon')
+
     def test_search_for_levels(self):
         """ test search for levels """
         query_string = '{"filter" : {"or" : { "city.name" : "New York", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
@@ -130,5 +137,6 @@ class TestCase(unittest.TestCase):
         query_string = '{"filter" : { "city.name" : {"like" : "%New%"} } }'
         results = elastic_query(User, query_string, session).all()
         assert(results[0].name == 'Steve')
+
 
 unittest.main()

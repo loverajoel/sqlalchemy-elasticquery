@@ -60,6 +60,10 @@ SELECT users.id AS users_id, users.name AS users_name, users.lastname AS users_l
 # Querying
 * ***Nested search***: You can search for nested properties(Two levels, now). Ex: 
 
+# Options
+
+* **enabled_fields**: It's a list of fields allowed for work, for default all fields are allowed.
+
 # Using with Flask
 
 ElasticQuery example
