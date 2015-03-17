@@ -1,12 +1,12 @@
 # sqlalchemy-elasticquery
 
-Use [ElasticSearch](http://www.elasticsearch.org/) query search in [SQLAlchemy](http://www.sqlalchemy.org/).
+Use [ElasticSearch](http://www.elasticsearch.org/) syntax for search in [SQLAlchemy](http://www.sqlalchemy.org/).
 
 WARNING: ElasticQuery is currently under active development.  Thus the format of the API and this module may change drastically.
 
 # Install
 ```
-sudo pip install git+https://github.com/loverajoel/sqlalchemy-elasticquery
+pip install sqlalchemy-elasticquery
 ```
 # Quick start example
 Import module
@@ -76,7 +76,6 @@ SELECT users.id AS users_id, users.name AS users_name, users.lastname AS users_l
 ```
 
 # TODO:
- - Operator levels (and : { or : {...}}
  - Improve documentation
  - Improve tests
  - Errors emit
