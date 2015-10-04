@@ -4,10 +4,10 @@ from sqlalchemy.ext.declarative import declarative_base
 from flask.ext.sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import sessionmaker, relationship
 from sqlalchemy_elasticquery import elastic_query
-from sqlalchemy import and_, or_
 from flask import Flask
 
 Base = declarative_base()
+
 
 class City(Base):
     __tablename__ = 'city'
@@ -17,6 +17,7 @@ class City(Base):
 
     def __repr__(self):
         return str(self.id)
+
 
 class User(Base):
     __tablename__ = 'users'
@@ -30,6 +31,7 @@ class User(Base):
 
     def __repr__(self):
         return str(self.id)
+
 
 class TestCase(unittest.TestCase):
 
@@ -67,27 +69,38 @@ class TestCase(unittest.TestCase):
 
     def test_and_operator(self):
         """ test and operator """
-        query_string = '{"filter" : {"and" : {"name" : {"like" : "%Jho%"}, "lastname" : "Galt", "uid" : {"like" : "%1957%"} } } }'
+        query_string = \
+            '{"filter" : {"and" : {"name" : {"like" : "%Jho%"}, "lastname" : "Galt", "uid" : {"like" : "%1957%"} } } }'
         assert(elastic_query(User, query_string, session).count() == 1)
 
     def test_or_operator(self):
         """ test or operator """
-        query_string = '{"filter" : {"or" : { "name" : "Jobs", "lastname" : "Man", "uid" : "19571957" } } }'
+        query_string = \
+            '{"filter" : {"or" : { "name" : "Jobs", "lastname" : "Man", "uid" : "19571957" } } }'
         assert(elastic_query(User, query_string, session).count() == 2)
 
     def test_or_and_operator(self):
         """ test or and operator """
-        query_string = '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Galt" }, "and" : { "uid" : "19571957" } } }'
+        query_string = \
+            '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Galt" }, "and" : { "uid" : "19571957" } } }'
         assert(elastic_query(User, query_string, session).count() == 1)
 
     def test_sorting(self):
         """ test operator levels """
-        query_string = '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
+        query_string = \
+            '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
         results = elastic_query(User, query_string, session).all()
         assert(results[0].name == 'Iron')
 
+    def test_in_operator(self):
+        """ test operator in """
+        query_string = '{"filter" : {"name" : {"in" : ["Jhon", "Peter", "Iron"] } } }'
+        assert(elastic_query(User, query_string, session).count() == 2)
+
+        query_string = '{"filter" : {"name" : {"in" :["Jhon", "Peter", "Iron"]}, "lastname" : "Galt" } }'
+        assert(elastic_query(User, query_string, session).count() == 1)
+
     def test_flask(self):
-        #Flask app
         app = Flask(__name__)
         db = SQLAlchemy(app)
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///:memory:'
@@ -126,7 +139,8 @@ class TestCase(unittest.TestCase):
 
     def test_search_for_levels(self):
         """ test search for levels """
-        query_string = '{"filter" : {"or" : { "city.name" : "New York", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
+        query_string = \
+            '{"filter" : {"or" : { "city.name" : "New York", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
         results = elastic_query(User, query_string, session).all()
         assert(results[0].name == 'Iron')
 

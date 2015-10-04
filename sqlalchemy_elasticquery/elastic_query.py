@@ -79,8 +79,11 @@ class ElasticQuery(object):
 
     def search(self):
         """ This is the most important method """
-        # TODO: verify format and emit expetion
-        filters = json.loads(self.query)
+        try:
+            filters = json.loads(self.query)
+        except ValueError:
+            return False
+
         result = self.model_query
         if 'filter'in filters.keys():
             result = self.parse_filter(filters['filter'])
@@ -120,14 +123,15 @@ class ElasticQuery(object):
             value = field_value
         return field, operator, value
 
-    def verify_operator(self, operator):
+    @staticmethod
+    def verify_operator(operator):
         """ Verify if the operator is valid """
         try:
             if hasattr(OPERATORS[operator], '__call__'):
                 return True
             else:
                 return False
-        except:
+        except ValueError:
             return False
 
     def is_field_allowed(self, field):
