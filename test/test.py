@@ -75,7 +75,8 @@ class TestCase(unittest.TestCase):
 
     def test_or_operator(self):
         """ test or operator """
-        query_string = '{"filter" : {"or" : { "name" : "Jobs", "lastname" : "Man", "uid" : "19571957" } } }'
+        query_string = \
+            '{"filter" : {"or" : { "name" : "Jobs", "lastname" : "Man", "uid" : "19571957" } } }'
         assert(elastic_query(User, query_string, session).count() == 2)
 
     def test_or_and_operator(self):
@@ -86,9 +87,18 @@ class TestCase(unittest.TestCase):
 
     def test_sorting(self):
         """ test operator levels """
-        query_string = '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
+        query_string = \
+            '{"filter" : {"or" : { "name" : "Jhon", "lastname" : "Man" } }, "sort": { "name" : "asc" } }'
         results = elastic_query(User, query_string, session).all()
         assert(results[0].name == 'Iron')
+
+    def test_in_operator(self):
+        """ test operator in """
+        query_string = '{"filter" : {"name" : {"in" : ["Jhon", "Peter", "Iron"] } } }'
+        assert(elastic_query(User, query_string, session).count() == 2)
+
+        query_string = '{"filter" : {"name" : {"in" :["Jhon", "Peter", "Iron"]}, "lastname" : "Galt" } }'
+        assert(elastic_query(User, query_string, session).count() == 1)
 
     def test_flask(self):
         app = Flask(__name__)
