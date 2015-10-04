@@ -120,14 +120,15 @@ class ElasticQuery(object):
             value = field_value
         return field, operator, value
 
-    def verify_operator(self, operator):
+    @staticmethod
+    def verify_operator(operator):
         """ Verify if the operator is valid """
         try:
             if hasattr(OPERATORS[operator], '__call__'):
                 return True
             else:
                 return False
-        except:
+        except ValueError:
             return False
 
     def is_field_allowed(self, field):
