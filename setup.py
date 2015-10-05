@@ -9,7 +9,7 @@ def read(*paths):
 
 setup(
     name='sqlalchemy-elasticquery',
-    version='0.0.1',
+    version='0.0.3',
     description='Use ElasticSearch query search in SQLAlchemy.',
     url='https://github.com/loverajoel/sqlalchemy-elasticquery',
     license='MIT',
