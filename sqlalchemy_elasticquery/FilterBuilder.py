@@ -60,7 +60,7 @@ class FilterBuilder(object):
 
     def Valid(self):
         if self._valid:
-            if len(self._orFilters) > 0 and len(self._andFilters) > 0:
+            if len(self._orFilters) > 0 or len(self._andFilters) > 0:
                 return True
         return False
 
