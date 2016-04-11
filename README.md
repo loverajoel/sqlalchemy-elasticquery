@@ -4,6 +4,8 @@ Use [ElasticSearch](http://www.elasticsearch.org/) syntax for search in [SQLAlch
 
 WARNING: ElasticQuery is currently under active development.  Thus the format of the API and this module may change drastically.
 
+Now Python3 Compatible!
+
 # Install
 ```
 pip install sqlalchemy-elasticquery

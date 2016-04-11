@@ -69,11 +69,11 @@ class FilterBuilder(object):
 
     def addOrFilter(self, filterTarget, filterType, filterValue):
         if filterType not in self._operators:
-            print "Error: Filter Type not known"
+            print("Error: Filter Type not known")
             self._valid = False
             return False
         if filterTarget not in self._columnList:
-            print "Error: Filter Target not valid"
+            print("Error: Filter Target not valid")
             self._valid = False
             return False
         self._orFilters.append((filterTarget, filterType, filterValue))
@@ -84,11 +84,11 @@ class FilterBuilder(object):
 
     def addAndFilter(self, filterTarget, filterType, filterValue):
         if filterType not in self._operators:
-            print "Error: Filter Type not known"
+            print("Error: Filter Type not known")
             self._valid = False
             return False
         if filterTarget not in self._columnList:
-            print "Error: Filter Target not valid"
+            print("Error: Filter Target not valid")
             self._valid = False
             return False
         self._andFilters.append((filterTarget, filterType, filterValue))
@@ -106,14 +106,12 @@ class FilterBuilder(object):
                 queryString += ',"%s" : {"%s" : "%s"}' % (
                     each[0], each[1], each[2])
         queryString += '}'
-        # print "end build %s: %s" % (and_or, queryString)
         return queryString
 
     """returns the queryString."""
-
     def buildQuery(self):
         if not self.Valid:
-            print "Invalid usage: cannot build."
+            print("Invalid usage: cannot build.")
             return False
         queryString = '{"filter" : {'
         orAdded = False
