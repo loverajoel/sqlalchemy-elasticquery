@@ -57,28 +57,35 @@ class FilterBuilder(object):
             'not_in', 'not_equal_to'
         }
 
-    """Checks for a valid filter."""
-
     def default_factory(self):
         return defaultdict(dict)
 
+        """Checks for a valid filter."""
+
     def Valid(self):
-        if self._valid:
-            if len(self._orFilters) > 0 or len(self._andFilters) > 0:
-                return True
+        if len(self._orFilters) > 0 or len(self._andFilters) > 0:
+            return True
         return False
 
-    """filterTarget = column to filter, filterType = operator, filterValue = operation
-    ex. addOrFilter("id", "lt", "30")"""
-
-    def clearFilter(self, filterTarget):
+    def clearFilter(self, filterTarget, filterType=None):
+        """Delete a filter from the dicts.  If filterType is given will only delete the given type"""
         if filterTarget in self._orFilters:
-            del self._orFilters[filterTarget]
+            self.needsBuilt = True
+            if filterType:
+                del self._orFilters[filterTarget][filterType]
+            else:
+                del self._orFilters[filterTarget]
 
         if filterTarget in self._andFilters:
-            del self._andFilters[filterTarget]
+            self.needsBuilt = True
+            if filterType:
+                del self._andFilters[filterTarget][filterType]
+            else:
+                del self._andFilters[filterTarget]
 
     def addOrFilter(self, filterTarget, filterType, filterValue):
+        """filterTarget = column to filter, filterType = operator, filterValue = operation
+        ex. addOrFilter("id", "lt", "30")"""
         if filterType not in self._operators:
             print("Error: Filter Type not known")
             self._valid = False
@@ -92,10 +99,9 @@ class FilterBuilder(object):
         self.needsBuilt = True
         return True
 
-    """filterTarget = column to filter, filterType = operator, filterValue = operation
-    ex. addAndFilter("id", "lt", "30")"""
-
     def addAndFilter(self, filterTarget, filterType, filterValue):
+        """filterTarget = column to filter, filterType = operator, filterValue = operation
+        ex. addAndFilter("id", "lt", "30")"""
         if filterType not in self._operators:
             print("Error: Filter Type not known")
             self._valid = False
@@ -126,13 +132,14 @@ class FilterBuilder(object):
         queryString += '}'
         return queryString
 
-    """returns the queryString."""
     def buildQuery(self):
-        if not self.needsBuilt:
-            return self.queryString
+        """returns the queryString."""
         if not self.Valid:
             print("Invalid usage: cannot build.")
             return False
+        if not self.needsBuilt:
+            return self.queryString
+
         queryString = '{"filter" : {'
         orAdded = False
 
