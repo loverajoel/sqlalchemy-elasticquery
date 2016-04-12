@@ -49,7 +49,6 @@ class FilterBuilder(object):
         self.needsBuilt = False
         module = sqlalchemy_inspect(ObjectClass)
         self._columnList = module.column_attrs.keys()
-        ObjectClass
         self._operators = {
             'like', 'equals', 'is_null',
             'is_not_null', 'gt', 'gte',
