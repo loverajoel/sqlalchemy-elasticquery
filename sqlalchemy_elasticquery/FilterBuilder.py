@@ -20,21 +20,21 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 # THE SOFTWARE.
 
-# I just coded this real quick because I needed to dynamicly build queries and it
-# was to much work with strings. I haven't tested it beyond a few simple queries
-# but it works so far.
+# FilterBuilder works with elastic-query and sqlalchemy to make it easier to
+# make dynamic querys.  Hope someone finds it useful!
 
 # USAGE:
 #
-# make a FilterBuilder
+# make a FilterBuilder passing sqlalchemy ORM class
 # myfilter = FilterBuilder(myClass)
+# add a And or Or filters arguments are:
+#                    column, operator, value
 # myfilter.addAndFilter("id", "lt", "45")
 # queryString = myfilter.buildQuery()
 
-# Once a string is return the FilterBuilder is no longer valid.
-
 
 from sqlalchemy import inspect as sqlalchemy_inspect
+from collections import defaultdict
 
 
 class FilterBuilder(object):
@@ -43,9 +43,10 @@ class FilterBuilder(object):
     """Takes a sqlalchemy ORM class"""
 
     def __init__(self, ObjectClass):
-        self._orFilters = list()
-        self._andFilters = list()
+        self._orFilters = defaultdict(self.default_factory)
+        self._andFilters = defaultdict(self.default_factory)
         self._valid = True
+        self.needsBuilt = False
         module = sqlalchemy_inspect(ObjectClass)
         self._columnList = module.column_attrs.keys()
         ObjectClass
@@ -58,6 +59,9 @@ class FilterBuilder(object):
 
     """Checks for a valid filter."""
 
+    def default_factory(self):
+        return defaultdict(dict)
+
     def Valid(self):
         if self._valid:
             if len(self._orFilters) > 0 or len(self._andFilters) > 0:
@@ -66,6 +70,13 @@ class FilterBuilder(object):
 
     """filterTarget = column to filter, filterType = operator, filterValue = operation
     ex. addOrFilter("id", "lt", "30")"""
+
+    def clearFilter(self, filterTarget):
+        if filterTarget in self._orFilters:
+            del self._orFilters[filterTarget]
+
+        if filterTarget in self._andFilters:
+            del self._andFilters[filterTarget]
 
     def addOrFilter(self, filterTarget, filterType, filterValue):
         if filterType not in self._operators:
@@ -76,7 +87,9 @@ class FilterBuilder(object):
             print("Error: Filter Target not valid")
             self._valid = False
             return False
-        self._orFilters.append((filterTarget, filterType, filterValue))
+        targetDict = self._orFilters[filterTarget]
+        targetDict[filterType] = filterValue
+        self.needsBuilt = True
         return True
 
     """filterTarget = column to filter, filterType = operator, filterValue = operation
@@ -91,25 +104,32 @@ class FilterBuilder(object):
             print("Error: Filter Target not valid")
             self._valid = False
             return False
-        self._andFilters.append((filterTarget, filterType, filterValue))
+        targetDict = self._andFilters[filterTarget]
+        targetDict[filterType] = filterValue
+        self.needsBuilt = True
         return True
 
-    def _buildSubQuery(self, whichList, and_or, queryString):
-        # print "build %s: %s" % (and_or, queryString)
-        if len(whichList) > 0:
-            queryString += '"%s" :{ ' % and_or
-            thisOr = whichList.pop()
-            queryString += '"%s" : {"%s" : "%s"}' % (
-                thisOr[0], thisOr[1], thisOr[2])
-        if len(whichList) > 0:
-            for each in whichList:
-                queryString += ',"%s" : {"%s" : "%s"}' % (
-                    each[0], each[1], each[2])
+    def _buildSubQuery(self, whichDict, and_or, queryString):
+        if len(whichDict) > 0:
+            first_run = True
+            for target in whichDict.keys():
+                typeDict = whichDict[target]
+                for eachType in typeDict.keys():
+                    if first_run:
+                        queryString += '"%s" :{ ' % and_or
+                        queryString += '"%s" : {"%s" : "%s"}' % (
+                            target, eachType, typeDict[eachType])
+                        first_run = False
+                    else:
+                        queryString += ',"%s" : {"%s" : "%s"}' % (
+                            target, eachType, typeDict[eachType])
         queryString += '}'
         return queryString
 
     """returns the queryString."""
     def buildQuery(self):
+        if not self.needsBuilt:
+            return self.queryString
         if not self.Valid:
             print("Invalid usage: cannot build.")
             return False
@@ -129,5 +149,5 @@ class FilterBuilder(object):
                 self._andFilters, "and", queryString)
 
         queryString += '}}'
-        self._valid = False
+        self.queryString = queryString
         return queryString
