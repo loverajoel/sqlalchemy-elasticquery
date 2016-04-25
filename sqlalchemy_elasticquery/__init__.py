@@ -1,1 +1,1 @@
-__all__ = ["FilterBuilder", "elastic-query"]
+from .elastic_query import elastic_query

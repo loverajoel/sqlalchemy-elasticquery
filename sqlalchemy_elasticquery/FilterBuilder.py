@@ -35,6 +35,7 @@
 
 from sqlalchemy import inspect as sqlalchemy_inspect
 from collections import defaultdict
+import json
 
 
 class FilterBuilder(object):
@@ -43,9 +44,9 @@ class FilterBuilder(object):
     """Takes a sqlalchemy ORM class"""
 
     def __init__(self, ObjectClass):
-        self._orFilters = defaultdict(self.default_factory)
-        self._andFilters = defaultdict(self.default_factory)
-        self._valid = True
+        self._orFilters = defaultdict(self._default_factory)
+        self._andFilters = defaultdict(self._default_factory)
+        # self._valid = True
         self.needsBuilt = False
         module = sqlalchemy_inspect(ObjectClass)
         self._columnList = module.column_attrs.keys()
@@ -56,12 +57,11 @@ class FilterBuilder(object):
             'not_in', 'not_equal_to'
         }
 
-    def default_factory(self):
+    def _default_factory(self):
         return defaultdict(dict)
 
-        """Checks for a valid filter."""
-
     def Valid(self):
+        """Checks for a valid filter."""
         if len(self._orFilters) > 0 or len(self._andFilters) > 0:
             return True
         return False
@@ -71,14 +71,16 @@ class FilterBuilder(object):
         if filterTarget in self._orFilters:
             self.needsBuilt = True
             if filterType:
-                del self._orFilters[filterTarget][filterType]
+                if filterType in self._orFilters[filterTarget]:
+                    del self._orFilters[filterTarget][filterType]
             else:
                 del self._orFilters[filterTarget]
 
         if filterTarget in self._andFilters:
             self.needsBuilt = True
             if filterType:
-                del self._andFilters[filterTarget][filterType]
+                if filterType in self._andFilters[filterTarget]:
+                    del self._andFilters[filterTarget][filterType]
             else:
                 del self._andFilters[filterTarget]
 
@@ -93,8 +95,9 @@ class FilterBuilder(object):
             print("Error: Filter Target not valid")
             self._valid = False
             return False
-        targetDict = self._orFilters[filterTarget]
-        targetDict[filterType] = filterValue
+        self._orFilters[filterTarget][filterType] = filterValue
+        # targetDict = self._orFilters[filterTarget][filterType] = filterValue
+        # targetDict[filterType] = filterValue
         self.needsBuilt = True
         return True
 
@@ -109,51 +112,29 @@ class FilterBuilder(object):
             print("Error: Filter Target not valid")
             self._valid = False
             return False
-        targetDict = self._andFilters[filterTarget]
-        targetDict[filterType] = filterValue
+        self._andFilters[filterTarget][filterType] = filterValue
+        # targetDict = self._andFilters[filterTarget][filterType] = filterValue
+        # targetDict[filterType] = filterValue
         self.needsBuilt = True
         return True
 
-    def _buildSubQuery(self, whichDict, and_or, queryString):
-        if len(whichDict) > 0:
-            first_run = True
-            for target in whichDict.keys():
-                typeDict = whichDict[target]
-                for eachType in typeDict.keys():
-                    if first_run:
-                        queryString += '"%s" :{ ' % and_or
-                        queryString += '"%s" : {"%s" : "%s"}' % (
-                            target, eachType, typeDict[eachType])
-                        first_run = False
-                    else:
-                        queryString += ',"%s" : {"%s" : "%s"}' % (
-                            target, eachType, typeDict[eachType])
-        queryString += '}'
-        return queryString
-
     def buildQuery(self):
-        """returns the queryString."""
+        """Returns the queryString.
+        Builds query if new, or changes have been made. Returns "False" on error and prints Error to console."""
         if not self.Valid:
             print("Invalid usage: cannot build.")
             return False
         if not self.needsBuilt:
             return self.queryString
 
-        queryString = '{"filter" : {'
-        orAdded = False
-
-        if len(self._orFilters) > 0:
-            queryString = self._buildSubQuery(
-                self._orFilters, "or", queryString)
-            orAdded = True
-
-        if orAdded and len(self._andFilters) > 0:
-            queryString += ','
-
+        filterDict = dict()
+        theFilters = dict()
         if len(self._andFilters) > 0:
-            queryString = self._buildSubQuery(
-                self._andFilters, "and", queryString)
+            theFilters["and"] = self._andFilters
+        if len(self._orFilters) > 0:
+            theFilters["or"] = self._orFilters
+        filterDict["filter"] = theFilters
+        queryString = json.dumps(filterDict)
 
-        queryString += '}}'
         self.queryString = queryString
         return queryString
