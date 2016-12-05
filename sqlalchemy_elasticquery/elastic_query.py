@@ -114,7 +114,7 @@ class ElasticQuery(object):
         """ Parse the operators and traduce: ES to SQLAlchemy operators """
         if type(field_value) is dict:
             # TODO: check operators and emit error
-            operator = field_value.keys()[0]
+            operator = list(field_value)[0]
             if self.verify_operator(operator) is False:
                 return "Error: operador no exite", operator
             value = field_value[operator]
