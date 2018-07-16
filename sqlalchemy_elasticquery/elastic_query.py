@@ -100,6 +100,7 @@ class ElasticQuery(object):
                 for field in filters[filter_type]:
                     if self.is_field_allowed(field):
                         conditions.append(self.create_query(self.parse_field(field, filters[filter_type][field])))
+                conditions = [j for i in conditions for j in i]  # join list of list to single condition list
                 if filter_type == 'or':
                     self.model_query = self.model_query.filter(or_(*conditions))
                 elif filter_type == 'and':
@@ -107,21 +108,27 @@ class ElasticQuery(object):
             else:
                 if self.is_field_allowed(filter_type):
                     conditions = self.create_query(self.parse_field(filter_type, filters[filter_type]))
-                    self.model_query = self.model_query.filter(conditions)
+                    for condition in conditions:
+                        self.model_query = self.model_query.filter(condition)
         return self.model_query
 
     def parse_field(self, field, field_value):
         """ Parse the operators and traduce: ES to SQLAlchemy operators """
+        output = []
+
         if type(field_value) is dict:
             # TODO: check operators and emit error
-            operator = list(field_value)[0]
-            if self.verify_operator(operator) is False:
-                return "Error: operador no exite", operator
-            value = field_value[operator]
+            for k, v in field_value.items():
+                operator = k
+                if self.verify_operator(operator) is False:
+                    return "Error: operador no exite", operator
+                value = v
+
+                output.append((field, operator, value))
         elif type(field_value) is unicode:
             operator = u'equals'
             value = field_value
-        return field, operator, value
+        return [(field, operator, value)]
 
     @staticmethod
     def verify_operator(operator):
@@ -140,21 +147,26 @@ class ElasticQuery(object):
         else:
             return True
 
-    def create_query(self, attr):
+    def create_query(self, attrs):
         """ Mix all values and make the query """
-        field = attr[0]
-        operator = attr[1]
-        value = attr[2]
-        model = self.model
+        output = []
 
-        if '.' in field:
-            field_items = field.split('.')
-            field_name = getattr(model, field_items[0], None)
-            class_name = field_name.property.mapper.class_
-            new_model = getattr(class_name, field_items[1])
-            return field_name.has(OPERATORS[operator](new_model, value))
+        for attr in attrs:
+            field = attr[0]
+            operator = attr[1]
+            value = attr[2]
+            model = self.model
 
-        return OPERATORS[operator](getattr(model, field, None), value)
+            if '.' in field:
+                field_items = field.split('.')
+                field_name = getattr(model, field_items[0], None)
+                class_name = field_name.property.mapper.class_
+                new_model = getattr(class_name, field_items[1])
+                output.append(field_name.has(OPERATORS[operator](new_model, value)))
+            else:
+                output.append(OPERATORS[operator](getattr(model, field, None), value))
+
+        return output
 
     def sort(self, sort_list):
         """ Sort """
