@@ -128,7 +128,9 @@ class ElasticQuery(object):
         elif type(field_value) is unicode:
             operator = u'equals'
             value = field_value
-        return [(field, operator, value)]
+            output.append((field, operator, value))
+
+        return output
 
     @staticmethod
     def verify_operator(operator):
