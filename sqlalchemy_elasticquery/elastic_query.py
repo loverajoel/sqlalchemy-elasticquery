@@ -116,7 +116,7 @@ class ElasticQuery(object):
             # TODO: check operators and emit error
             operator = list(field_value)[0]
             if self.verify_operator(operator) is False:
-                return "Error: operador no exite", operator
+                return "Error: operator does not exist", operator
             value = field_value[operator]
         elif type(field_value) is unicode:
             operator = u'equals'
