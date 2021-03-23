@@ -52,8 +52,8 @@ def elastic_query(model, query, session=None, enabled_fields=None):
 OPERATORS = {
     'like': lambda f, a: f.like(a),
     'equals': lambda f, a: f == a,
-    'is_null': lambda f: f is None,
-    'is_not_null': lambda f: f is not None,
+    'is_null': lambda f: f.is_(None),
+    'is_not_null': lambda f: f.isnot(None),
     'gt': lambda f, a: f > a,
     'gte': lambda f, a: f >= a,
     'lt': lambda f, a: f < a,
